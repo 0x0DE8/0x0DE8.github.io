@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+	<!-- title -->
+	
+<title>
+    
+    eat,pwn,sleep,repeat
+</title>
+
+	<!-- keywords,description -->
+	
+
+
+
+
+
+
+
+	<!-- favicon -->
+	
+		<link rel="shortcut icon" href="/project/favicon.ico">
+	
+
+	<!-- css, script -->
+	
+<link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css">
+
+	
+<link rel="stylesheet" href="/project/css/main.css">
+
+
+	
+<script src="https://cdn.jsdelivr.net/npm/darkreader@4.9.58/darkreader.min.js"></script>
+
+	
+<script src="/project/js/main.js"></script>
+
+
+	<!-- custom css and js -->
+	
+
+
+
+
+
+	<!-- search -->
+	<script async>
+	window.searchEngine = "https://www.google.com/search?q=" ?? "https://www.google.com/search?q=";
+	window.homeHost = "https://0x0DE8.github.io/project" ?? window.location.host;
+</script>
+
+	<!-- statistics -->
+	
+	<script async reload src="https://cn.vercount.one/js"></script>
+
+
+	<!-- analysis -->
+	
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+	<header id="header">
+	<a id="title" href="/project/" class="logo">
+		<img id="logo" src="/project/favicon-white.ico" alt="logo"/>
+		eat,pwn,sleep,repeat
+	</a>
+
+	<ul id="menu">
+		
+			<li class="menu-item">
+				<a href="/project/about" class="menu-item-link">关于</a>
+			</li>
+		
+		
+			<li class="menu-item">
+				<a href="/project/tags" class="menu-item-link">标签</a>
+			</li>
+		
+		
+			<li class="menu-item">
+				<a href="/project/categories" class="menu-item-link">分类</a>
+			</li>
+		
+		
+			<li class="menu-item">
+				<a href="" class="menu-item-link item-icon" target="_blank">
+					<i class="fa fa-github fa-2x"></i>
+				</a>
+			</li>
+		
+		
+			<li class="menu-item dark-mode">
+				<a href="#" class="menu-item-link item-icon">
+					<i class="fa fa-moon-o fa-2x"></i>
+				</a>
+			</li>
+
+			<script async>
+				const localModel = localStorage.getItem("darkModel");
+				const darkModel = !localModel ? 0 : localModel;
+
+				const darkModeIcon = document.querySelector("#menu .dark-mode i");
+
+				if (darkModel == 1) {
+					darkModeIcon.classList.replace("fa-moon-o", "fa-sun-o");
+					DarkReader.enable({
+						brightness: 100,
+						contrast: 90,
+						sepia: 10,
+					});
+				}
+
+				darkModeIcon.addEventListener("click", () => {
+					const isMoon = darkModeIcon.classList.contains("fa-moon-o");
+					darkModeIcon.classList.toggle("fa-moon-o", !isMoon);
+					darkModeIcon.classList.toggle("fa-sun-o", isMoon);
+					localStorage.setItem("darkModel", isMoon ? 1 : 0);
+					isMoon ? DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 }) : DarkReader.disable();
+				});
+			</script>
+		
+	</ul>
+</header>
+
+<script async>
+	let startHeight = 0;
+	window.addEventListener("scroll", () => {
+		const { scrollY: endHeight } = window;
+		const distance = endHeight - startHeight;
+		startHeight = endHeight;
+		document.querySelector("#header").style.display = distance > 0 && endHeight > 50 ? "none" : "";
+	});
+</script>
+	<div id="sidebar">
+	<button id="sidebar-toggle" class="toggle" ><i class="fa fa-arrow-right " aria-hidden="true"></i></button>
+	<div id="site-toc">
+		<input id="search-input" class="search-input" type="search" placeholder="按回车全站搜索">
+		<div id="tree">
+			
+			
+							<ul>
+								<li class="file">
+									<a href="/project/2025/04/10/hello-world/" title="/project/2025/04/10/hello-world">
+									
+										hello-world
+									
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/project/2025/04/11/Win32API/" title="/project/2025/04/11/Win32API">
+									
+										Win32API
+									
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+		</div>
+	</div>
+</div>
+
+	<div id="content">
+		<div id="index">
+	
+	<div class="index-li">
+		<a href="/project/2025/04/11/Win32API/">
+			<h2 class="index-title">
+				Win32API
+			</h2>
+			<div class="index-brief">
+				
+调用约定_stdcall和_cdecl
+它们的核心区别在于参数传递顺序、堆栈清理责任方、函数名修饰规则等
+_stdcall
+从右向左压入堆栈(和_cdecl相同)被调用函数自动清理堆栈，通过ret n指令函数名修饰：_函数名@参数字节数，如_Add@8可变参数支持：不支持（参数个数固定）跨平台兼容性：专为win api设计，跨语言兼容好
+_cdecl
+从右向左压入堆栈(和_stdcall相同)调 ...
+			</div>
+		</a>
+		<div class="article-meta">
+			<span>2025-04-11</span>
+			  
+		</div>
+	</div>
+	
+	<div class="index-li">
+		<a href="/project/2025/04/10/hello-world/">
+			<h2 class="index-title">
+				Hello World
+			</h2>
+			<div class="index-brief">
+				Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
+Quick ...
+			</div>
+		</a>
+		<div class="article-meta">
+			<span>2025-04-10</span>
+			  
+		</div>
+	</div>
+	
+
+	<div id="index-paginator">
+		
+	</div>
+</div>
+
+	</div>
+
+	<div id="footer">
+	<div>
+		
+		
+			<span id="busuanzi_container_site_pv">
+				总访问量
+				<span id="vercount_value_page_pv"></span>
+			</span>
+			<span id="busuanzi_container_site_uv">
+				总访客数
+				<span id="vercount_value_site_pv"></span>
+			</span>
+		
+	</div>
+	 <div> Theme <a href="https://github.com/Exisi/hexo-theme-node-tree"	target="_blank">Node-Tree</a> Powered by <a href="https://hexo.io" target="_blank">Hexo</a> </div> 
+</div>
+	<button id="totop-toggle" class="toggle"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+
+<script async>
+    const topTopBtn = document.querySelector("#totop-toggle");
+	topTopBtn.addEventListener("click", () => {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	});
+</script>
+</body>
+</html>

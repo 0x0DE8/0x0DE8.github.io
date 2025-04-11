@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+	<!-- title -->
+	
+<title>
+    
+        Win32API&nbsp;&nbsp;✦&nbsp;
+    
+    eat,pwn,sleep,repeat
+</title>
+
+	<!-- keywords,description -->
+	
+
+
+
+
+
+
+
+	<!-- favicon -->
+	
+		<link rel="shortcut icon" href="/project/favicon.ico">
+	
+
+	<!-- css, script -->
+	
+<link rel="stylesheet" href="https://unpkg.com/font-awesome@4.7.0/css/font-awesome.min.css">
+
+	
+<link rel="stylesheet" href="/project/css/main.css">
+
+
+	
+<script src="https://cdn.jsdelivr.net/npm/darkreader@4.9.58/darkreader.min.js"></script>
+
+	
+<script src="/project/js/main.js"></script>
+
+
+	<!-- custom css and js -->
+	
+
+
+
+
+
+	<!-- search -->
+	<script async>
+	window.searchEngine = "https://www.google.com/search?q=" ?? "https://www.google.com/search?q=";
+	window.homeHost = "https://0x0DE8.github.io/project" ?? window.location.host;
+</script>
+
+	<!-- statistics -->
+	
+	<script async reload src="https://cn.vercount.one/js"></script>
+
+
+	<!-- analysis -->
+	
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+	<header id="header">
+	<a id="title" href="/project/" class="logo">
+		<img id="logo" src="/project/favicon-white.ico" alt="logo"/>
+		eat,pwn,sleep,repeat
+	</a>
+
+	<ul id="menu">
+		
+			<li class="menu-item">
+				<a href="/project/about" class="menu-item-link">关于</a>
+			</li>
+		
+		
+			<li class="menu-item">
+				<a href="/project/tags" class="menu-item-link">标签</a>
+			</li>
+		
+		
+			<li class="menu-item">
+				<a href="/project/categories" class="menu-item-link">分类</a>
+			</li>
+		
+		
+			<li class="menu-item">
+				<a href="" class="menu-item-link item-icon" target="_blank">
+					<i class="fa fa-github fa-2x"></i>
+				</a>
+			</li>
+		
+		
+			<li class="menu-item dark-mode">
+				<a href="#" class="menu-item-link item-icon">
+					<i class="fa fa-moon-o fa-2x"></i>
+				</a>
+			</li>
+
+			<script async>
+				const localModel = localStorage.getItem("darkModel");
+				const darkModel = !localModel ? 0 : localModel;
+
+				const darkModeIcon = document.querySelector("#menu .dark-mode i");
+
+				if (darkModel == 1) {
+					darkModeIcon.classList.replace("fa-moon-o", "fa-sun-o");
+					DarkReader.enable({
+						brightness: 100,
+						contrast: 90,
+						sepia: 10,
+					});
+				}
+
+				darkModeIcon.addEventListener("click", () => {
+					const isMoon = darkModeIcon.classList.contains("fa-moon-o");
+					darkModeIcon.classList.toggle("fa-moon-o", !isMoon);
+					darkModeIcon.classList.toggle("fa-sun-o", isMoon);
+					localStorage.setItem("darkModel", isMoon ? 1 : 0);
+					isMoon ? DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 }) : DarkReader.disable();
+				});
+			</script>
+		
+	</ul>
+</header>
+
+<script async>
+	let startHeight = 0;
+	window.addEventListener("scroll", () => {
+		const { scrollY: endHeight } = window;
+		const distance = endHeight - startHeight;
+		startHeight = endHeight;
+		document.querySelector("#header").style.display = distance > 0 && endHeight > 50 ? "none" : "";
+	});
+</script>
+	<div id="sidebar">
+	<button id="sidebar-toggle" class="toggle" ><i class="fa fa-arrow-right " aria-hidden="true"></i></button>
+	<div id="site-toc">
+		<input id="search-input" class="search-input" type="search" placeholder="按回车全站搜索">
+		<div id="tree">
+			
+			
+							<ul>
+								<li class="file">
+									<a href="/project/2025/04/10/hello-world/" title="/project/2025/04/10/hello-world">
+									
+										hello-world
+									
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file active">
+									<a href="/project/2025/04/11/Win32API/" title="/project/2025/04/11/Win32API">
+									
+										Win32API
+									
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+		</div>
+	</div>
+</div>
+
+	<div id="content">
+		<h1 id="article-title">
+	Win32API
+</h1>
+
+<div class="article-meta">
+	<span> 0x0DE8 </span>
+	<span> 2025-04-11 13:39:55 </span>
+	<div id="article-categories">
+		
+			<span>Categories：</span>
+			
+		
+		
+			<span>Tags：</span>
+			
+		
+	</div>
+</div>
+
+<div id="article-content">
+	<hr>
+<p>调用约定<br>_stdcall和_cdecl</p>
+<p>它们的核心区别在于参数传递顺序、堆栈清理责任方、函数名修饰规则等</p>
+<p>_stdcall</p>
+<p>从右向左压入堆栈(和_cdecl相同)<br>被调用函数自动清理堆栈，通过ret n指令<br>函数名修饰：_函数名@参数字节数，如_Add@8<br>可变参数支持：不支持（参数个数固定）<br>跨平台兼容性：专为win api设计，跨语言兼容好</p>
+<p>_cdecl</p>
+<p>从右向左压入堆栈(和_stdcall相同)<br>调用者手动清理堆栈，通过add esp,n指令<br>函数名修饰：_函数名，如_Add<br>可变参数支持：支持，如printf<br>跨平台兼容性：C&#x2F;C++默认约定，适合跨平台开发</p>
+<p>堆栈清理方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">_stdcall</span><br><span class="line">asm:</span><br><span class="line">add eax,edx</span><br><span class="line">ret 8</span><br><span class="line"></span><br><span class="line">_cdecl</span><br><span class="line">asm:</span><br><span class="line">push 20   压入第二个参数</span><br><span class="line">push 10   压入第一个参数</span><br><span class="line">call Add   调用函数</span><br><span class="line">add esp,8  调用者清理8个字节的参数</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<hr>
+<p>函数名修饰：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">_stdcall:</span><br><span class="line">编译器在函数名前加_，后面跟@和参数总字节数，如_myfunc@12</span><br><span class="line">保证不同编译器生成的符号名唯一，避免链接冲突</span><br><span class="line">_cdecl</span><br><span class="line">仅添加_前缀，如_myfunc，无参数信息</span><br><span class="line"></span><br><span class="line">适用场景</span><br><span class="line">_stdcall</span><br><span class="line">WindowsApi函数：如MessageBox,CreateWindow等</span><br><span class="line">固定参数函数：参数确定且无需动态调整的场景</span><br><span class="line">跨语言调用：与pascal、delphi等语言交互兼容好</span><br><span class="line"></span><br><span class="line">_cdecl</span><br><span class="line">C/C++标准库函数，如printf、scanf等(支持可变参数)</span><br><span class="line">可变参数函数，需要动态传递参数的场景</span><br><span class="line">跨语言调用：调用者清理堆栈可能引入额外指令，但是灵活性更高</span><br><span class="line"></span><br><span class="line">代码示例：</span><br><span class="line">int __stdcall Add(int a,int b)&#123;</span><br><span class="line">    return a + b;</span><br><span class="line">&#125;</span><br><span class="line">int result = Add(3,5);    //编译器自动处理参数压栈和堆栈清理</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int __cdecl Add(int a,int b)&#123;</span><br><span class="line">    return a + b;</span><br><span class="line">&#125;</span><br><span class="line">int result = Add(3,5);   //调用者负责清理堆栈</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<hr>
+<p>C&#x2F;C++中常用的数据类型</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">int、unsigned int、char、unsigned char、shot、long、float、double、char*、int*、enum、struct、class等</span><br><span class="line"></span><br><span class="line">LPARAM：消息的L参数</span><br><span class="line">WPARAM：消息的M参数</span><br><span class="line">HANDLE：对象的句柄</span><br><span class="line">HINSTANCE：程序实例的句柄</span><br><span class="line">HKEY：注册表键的句柄</span><br><span class="line">HWND：窗口的句柄</span><br><span class="line">HMODULE：模块的句柄</span><br><span class="line">HICON：图标的句柄</span><br><span class="line">WINAPI：windows api的函数调用方式，常见于sdk头文件中对API函数的声明中，相当于_stdcall</span><br><span class="line">LPSTR：字符指针</span><br><span class="line">LPCSTR：字符串常量</span><br><span class="line">LPCTSTR：根据环境配置，如果定义了unicode宏，则是LPCWSTR类型，否则是LPCSTR类型</span><br><span class="line">LPCWSTR：unicode字符串常量</span><br><span class="line">LPDWORD：指向DWORD类型数据的指针</span><br><span class="line">CHAR：8比特字节</span><br><span class="line">TCHAR：如果定义了unicode则是WCHAR，否则是CHAR</span><br><span class="line">UCHAR：无符号CHAR</span><br><span class="line">WCHAR：16位unicode字符</span><br><span class="line"></span><br><span class="line">参数简写：</span><br><span class="line">lpfn 指向函数的长指针</span><br><span class="line">cb 字节数</span><br><span class="line">lpsz 指向以0结尾的字符串的长指针</span><br><span class="line">WM 窗口消息</span><br><span class="line"></span><br><span class="line">在窗口示例代码中，HINSTANCE、LPTSTR都是C++中没有出现过的类型，这种是被微软定义过的类型</span><br><span class="line"></span><br><span class="line">DWORD实质上就是unsigned long数据类型，32位无符号整型</span><br><span class="line">HANDLE类型实质上是void*，HANDLE定义为typedof PVOID HANDLE</span><br><span class="line">HANDLE实际上就是一个PVOID，PVOID实际上是：</span><br><span class="line">typeof void* PVOID；</span><br><span class="line">PVOID就是指向void的指针</span><br><span class="line"></span><br><span class="line">一些没见过的类型可以看看实际定义是什么样的</span><br></pre></td></tr></table></figure>
+<hr>
+<p>WinApi语法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">如下</span><br><span class="line">BOOL DeleteFile(</span><br><span class="line">  [in] LPCTSTR lpFileName</span><br><span class="line">);</span><br><span class="line">BOOL是返回值类型，表示函数执行的结果</span><br><span class="line">DeleteFile是函数名称</span><br><span class="line">[in]是微软的文档标记，用于指示参数的方向，[in]表示参数是输入参数，也就是调用者向函数传递数据，这种标记是微软用于在文档中帮助开发者理解参数的用途</span><br><span class="line">LPCTSTR：一个指向常量字符串的指针类型，如果项目使用unicode则LPCTSTR被定义为LPCWSTR，即指向wchar_t类型的字符串指针</span><br><span class="line">如果用多字节字符集或ANSI字符集，LPCTSTR被定义为LPCSTR，即指向char类型的常量字符串指针</span><br><span class="line">lpFileName：要删除的文件路径和名称</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<p>下载实例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">在URLDownloadToFile中，第一个参数pCaller是控件的接口，如果不是ActiveX则为NULL，第二个参数szURL是下载地址，第三个参数szFileName是要保存的路径，第四个参数dwReserved为保留字段，必须为0，第五个参数lpfnCB为追溯下载进度，如果不需要则为NULL</span><br><span class="line"></span><br><span class="line">#include &lt;Windows.h&gt;</span><br><span class="line">#include &lt;tchar.h&gt;</span><br><span class="line">#pragma comment(lib,&quot;Urlmon.lib&quot;)</span><br><span class="line"></span><br><span class="line">int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR </span><br><span class="line">lpCmdLine, int nCmdShow)</span><br><span class="line">&#123;</span><br><span class="line">       HRESULT hret = URLDownloadToFile(NULL, </span><br><span class="line">_T(&quot;https://i1.hdslb.com/bfs/archive/7365d5a2e4948a962b06f88b1279a0eb846ae3a9.jpg@336w_190h_1c_!web-video-rcmd-cover.webp&quot;), _T(&quot;D:\\123.png&quot;), 0, NULL);</span><br><span class="line">       if (hret == S_OK) &#123;</span><br><span class="line">              MessageBox(NULL, _T(&quot;下载成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">       &#125;</span><br><span class="line">       else &#123;</span><br><span class="line">              MessageBox(NULL, _T(&quot;下载失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">       &#125;</span><br><span class="line">       return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<hr>
+<p>执行文件实例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ShellExecuteEX</span><br><span class="line">int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR </span><br><span class="line">lpCmdLine, int nCmdShow)</span><br><span class="line">&#123;</span><br><span class="line">       HRESULT hret = URLDownloadToFile(NULL, </span><br><span class="line">_T(&quot;https://i1.hdslb.com/bfs/archive/7365d5a2e4948a962b06f88b1279a0eb846ae3a9.jpg@336w_190h_1c_!web-video-rcmd-cover.webp&quot;), _T(&quot;D:\\123.png&quot;), 0, NULL);</span><br><span class="line">       if (hret == S_OK) &#123;</span><br><span class="line">              MessageBox(NULL, _T(&quot;下载成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">       &#125;</span><br><span class="line">       else &#123;</span><br><span class="line">              MessageBox(NULL, _T(&quot;下载失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">       &#125;</span><br><span class="line">       SHELLEXECUTEINFOA shellinfo = &#123; 0 &#125;;</span><br><span class="line">       shellinfo.cbSize = sizeof(SHELLEXECUTEINFO);</span><br><span class="line">       shellinfo.lpVerb = &quot;open&quot;;</span><br><span class="line">       shellinfo.lpFile = &quot;D:\\123.png&quot;;</span><br><span class="line">    shellinfo.nShow = SW_SHOW;</span><br><span class="line">       BOOL bRet = ShellExecuteExA(&amp;shellinfo);</span><br><span class="line">       return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<hr>
+<p>文件删除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">DeleteFile</span><br><span class="line">BOOL WINAPI DeleteFile(_In_ LPCTSTR lpFileName);</span><br><span class="line"></span><br><span class="line">BOOL dele = DeleteFile(_T(&quot;D:\\123.png&quot;));</span><br><span class="line">if (dele == TRUE) &#123;</span><br><span class="line">       MessageBox(NULL, _T(&quot;删除成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;删除失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">return 0;</span><br><span class="line"></span><br><span class="line">修改文件属性再删除</span><br><span class="line">BOOL SetFileAttributes(LPCTSTR lpFileName, DWORD dwFileAttributes);</span><br><span class="line">示例：</span><br><span class="line">BOOL SetAtt = SetFileAttributes(_T(&quot;D:\\123.png&quot;), FILE_ATTRIBUTE_READONLY);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>文件复制</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">BOOL CopyFile(</span><br><span class="line">  [in] LPCTSTR lpExistingFileName,</span><br><span class="line">  [in] LPCTSTR lpNewFileName,</span><br><span class="line">  [in] BOOL    bFailIfExists</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">BOOL CopyRes =  CopyFile(_T(&quot;D:\\123.png&quot;), _T(&quot;D:\\test.png&quot;), FALSE);</span><br><span class="line">if (CopyRes == TRUE) &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;复制成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;复制失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<hr>
+<p>文件移动</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">BOOL MoveFile(</span><br><span class="line">  [in] LPCTSTR lpExistingFileName,</span><br><span class="line">  [in] LPCTSTR lpNewFileName</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">BOOL MoveRes = MoveFile(_T(&quot;D:\\123.png&quot;), _T(&quot;D:\\test.png&quot;));</span><br><span class="line">if (MoveRes == TRUE) &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;移动成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;移动失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>获取执行的错误信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">GetLastError</span><br><span class="line"></span><br><span class="line">_Post_equals_last_error_ DWORD GetLastError();</span><br><span class="line">无参数，返回值是DWORD类型，表示错误码的值，针对函数执行遇到不同的错误，GetLastError返回值是不一样的</span><br><span class="line">获取调用线程最后错误代码值，最后一个错误代码是基于每个线程维护的，多个线程不会覆盖彼此最后的错误码</span><br><span class="line"></span><br><span class="line">BOOL bret = DeleteFile(_T(&quot;D:\\123.png&quot;));</span><br><span class="line">if (bret) &#123;</span><br><span class="line">	MessageBox(NULL, _T(&quot;删除成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">    BOOL bret = DeleteFile(_T(&quot;D:\\123.png&quot;));</span><br><span class="line">    if (bret) &#123;</span><br><span class="line">			MessageBox(NULL, _T(&quot;删除成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">			DWORD dwErr = GetLastError();</span><br><span class="line">			TCHAR szErrMsg[256];</span><br><span class="line">			_stprintf_s(szErrMsg, _T(&quot;错误代码: %lu&quot;), dwErr);   //这里先使用_stprintf_s函数将_T(&quot;错误代码: %lu&quot;), dwErr整合成字符串szErrMsg，</span><br><span class="line">			MessageBox(NULL, szErrMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">			cout &lt;&lt; &quot;dwErr: &quot; &lt;&lt; dwErr &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>文件的创建、打开、与关闭</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">CreateFile</span><br><span class="line"></span><br><span class="line">HANDLE CreateFileA(</span><br><span class="line">  [in]           LPCSTR                lpFileName,</span><br><span class="line">  [in]           DWORD                 dwDesiredAccess,</span><br><span class="line">  [in]           DWORD                 dwShareMode,</span><br><span class="line">  [in, optional] LPSECURITY_ATTRIBUTES lpSecurityAttributes,</span><br><span class="line">  [in]           DWORD                 dwCreationDisposition,</span><br><span class="line">  [in]           DWORD                 dwFlagsAndAttributes,</span><br><span class="line">  [in, optional] HANDLE                hTemplateFile</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">HANDLE bCret = CreateFile(_T(&quot;D:\\123.txt&quot;), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,NULL);</span><br><span class="line">if (!bCret) &#123;</span><br><span class="line">	MessageBox(NULL, _T(&quot;创建文件失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">	MessageBox(NULL, _T(&quot;创建文件成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ReadFile</span><br><span class="line">BOOL ReadFile(</span><br><span class="line">  [in]                HANDLE       hFile,</span><br><span class="line">  [out]               LPVOID       lpBuffer,</span><br><span class="line">  [in]                DWORD        nNumberOfBytesToRead,</span><br><span class="line">  [out, optional]     LPDWORD      lpNumberOfBytesRead,</span><br><span class="line">  [in, out, optional] LPOVERLAPPED lpOverlapped</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">HANDLE bCret = CreateFile(_T(&quot;D:\\123.txt&quot;), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,NULL);</span><br><span class="line">if (!bCret) &#123;</span><br><span class="line">	MessageBox(NULL, _T(&quot;创建文件失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">	MessageBox(NULL, _T(&quot;创建文件成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">char buffer[4096]; // 用于存储读取的数据</span><br><span class="line">DWORD bytesRead;   // 用于存储实际读取的字节数</span><br><span class="line">BOOL bRet = ReadFile(bCret, buffer, sizeof(buffer), &amp;bytesRead, NULL); // 修复问题 1: 正确传递缓冲区和字节数</span><br><span class="line">if (bRet) &#123;</span><br><span class="line">MessageBox(NULL, _T(&quot;读取文件成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">DWORD dwErr = GetLastError();</span><br><span class="line">TCHAR szErrMsg[256];</span><br><span class="line">_stprintf_s(szErrMsg, _T(&quot;错误代码: %lu&quot;), dwErr);</span><br><span class="line">MessageBox(NULL, szErrMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">cout &lt;&lt; &quot;dwErr: &quot; &lt;&lt; dwErr &lt;&lt; endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<hr>
+<p>关闭对象的有效句柄</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">BOOL CloseHandle(</span><br><span class="line">  [in] HANDLE hObject</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">HANDLE bCret = CreateFile(_T(&quot;D:\\123.txt&quot;), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);</span><br><span class="line">if (bCret != INVALID_HANDLE_VALUE) &#123; // 修复问题 1: 检查句柄是否有效</span><br><span class="line">MessageBox(NULL, _T(&quot;创建文件成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">MessageBox(NULL, _T(&quot;创建文件失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">char buffer[4096]; // 用于存储读取的数据</span><br><span class="line">DWORD bytesRead;   // 用于存储实际读取的字节数</span><br><span class="line">BOOL bRet = ReadFile(bCret, buffer, sizeof(buffer), &amp;bytesRead, NULL); // 修复问题 1: 正确传递缓冲区和字节数</span><br><span class="line">if (bRet) &#123;</span><br><span class="line">MessageBox(NULL, _T(&quot;读取文件成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">DWORD dwErr = GetLastError();</span><br><span class="line">TCHAR szErrMsg[256];</span><br><span class="line">_stprintf_s(szErrMsg, _T(&quot;错误代码: %lu&quot;), dwErr);</span><br><span class="line">MessageBox(NULL, szErrMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">cout &lt;&lt; &quot;dwErr: &quot; &lt;&lt; dwErr &lt;&lt; endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">BOOL bClo = CloseHandle(bCret); // 修复问题 2: 传递正确的句柄</span><br><span class="line">if (bClo) &#123;</span><br><span class="line">MessageBox(NULL, _T(&quot;关闭文件成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">DWORD dwErr = GetLastError();</span><br><span class="line">TCHAR szErrMsg[256];</span><br><span class="line">_stprintf_s(szErrMsg, _T(&quot;错误代码: %lu&quot;), dwErr);</span><br><span class="line">MessageBox(NULL, szErrMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">cout &lt;&lt; &quot;dwErr: &quot; &lt;&lt; dwErr &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>获取文件大小的两种方式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">GetFileSize</span><br><span class="line">DWORD GetFileSize(</span><br><span class="line">  [in]            HANDLE  hFile,</span><br><span class="line">  [out, optional] LPDWORD lpFileSizeHigh</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">32位</span><br><span class="line">DWORD dwFsize = GetFileSize(bCret, NULL);</span><br><span class="line">if (dwFsize != INVALID_FILE_SIZE) &#123;</span><br><span class="line">    TCHAR szMsg[256];</span><br><span class="line">    MessageBox(NULL, _T(&quot;获取文件大小成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">	_stprintf_s(szMsg, _T(&quot;文件大小: %lu&quot;), dwFsize);</span><br><span class="line">    MessageBox(NULL, szMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;else &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;获取文件大小失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">64位</span><br><span class="line">DWORD dwFsizeHigh = 0;  //创建高位</span><br><span class="line">DWORD dwFsize = GetFileSize(bCret, &amp;dwFsizeHigh);</span><br><span class="line">LONGLONG lFsize = ((LONGLONG)dwFsizeHigh &lt;&lt; 32) | dwFsize;    //将高位向左移动32位，并将dwFsize通过或操作变成低32位</span><br><span class="line">if (dwFsize != INVALID_FILE_SIZE) &#123;</span><br><span class="line">    TCHAR szMsg[256];</span><br><span class="line">    MessageBox(NULL, _T(&quot;获取文件大小成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">	_stprintf_s(szMsg, _T(&quot;文件大小: %lld&quot;), lFsize);</span><br><span class="line">    MessageBox(NULL, szMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;else &#123;</span><br><span class="line">    MessageBox(NULL, _T(&quot;获取文件大小失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">在文件大小不超过4GB的时候，可以不传入GetFileSize的第二个参数</span><br><span class="line"></span><br><span class="line">GetFileSizeEX</span><br><span class="line">是GetFileSize的扩展</span><br><span class="line">BOOL GetFileSizeEx(</span><br><span class="line">  [in]  HANDLE         hFile,</span><br><span class="line">  [out] PLARGE_INTEGER lpFileSize</span><br><span class="line">);</span><br><span class="line">第二个参数被修改为了一个指针，</span><br><span class="line">指向接收文件大小（以字节为单位 ）的 LARGE_INTEGER 结构的指针</span><br><span class="line">LARGE_INTEGER fileSize = &#123; 0 &#125;;</span><br><span class="line">BOOL dwFsize = GetFileSizeEx(bCret,&amp;fileSize);</span><br><span class="line">if (dwFsize) &#123;</span><br><span class="line">	TCHAR szMsg[256];</span><br><span class="line">	MessageBox(NULL, _T(&quot;获取文件大小成功&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">	_stprintf_s(szMsg, _T(&quot;文件大小: %ld&quot;), fileSize.QuadPart);  //QuadPart是LARGE_INTEGER结构体中一个成员，用来表示文件的大小或者文件指针的位置，常用于处理大于4GB的文件</span><br><span class="line">	MessageBox(NULL, szMsg, _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">	MessageBox(NULL, _T(&quot;获取文件大小失败&quot;), _T(&quot;提示&quot;), MB_OK);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">LARGE_INTEGER</span><br><span class="line">typedef union _LARGE_INTEGER &#123;</span><br><span class="line">  struct &#123;</span><br><span class="line">    DWORD LowPart;</span><br><span class="line">    LONG  HighPart;</span><br><span class="line">  &#125; DUMMYSTRUCTNAME;</span><br><span class="line">  struct &#123;</span><br><span class="line">    DWORD LowPart;</span><br><span class="line">    LONG  HighPart;</span><br><span class="line">  &#125; u;</span><br><span class="line">  LONGLONG QuadPart;   //在win32api定义中，QuadPart用来存储64位整数</span><br><span class="line">&#125; LARGE_INTEGER;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+<p>创建窗口过程<br>1.定义WinMain函数<br>2.定义窗口处理函数（自定义，处理消息）<br>3.注册窗口类（向操作系统写入数据）<br>4.创建窗口（内存中创建窗口）<br>5.显示窗口（绘制窗口图像）<br>6.消息循环（获取&#x2F;翻译&#x2F;派发）<br>7.消息处理</p>
+<p>WNDCLASS结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">typedef struct tagWNDCLASSA &#123;</span><br><span class="line">  UINT      style; //类样式</span><br><span class="line">  WNDPROC   lpfnWndProc;  //指向窗口过程的指针，必须使用CallWindowProc来调用窗口过程</span><br><span class="line">  int       cbClsExtra;  //按窗口类结构分配的额外字节数</span><br><span class="line">  int       cbWndExtra;  //在窗口实例之后分配的额外字节数</span><br><span class="line">  HINSTANCE hInstance;  //包含窗口实例的句柄</span><br><span class="line">  HICON     hIcon;  //类图标的句柄</span><br><span class="line">  HCURSOR   hCursor;  //类游标的句柄，如果此成员为NULL则提供系统默认的图标</span><br><span class="line">  HBRUSH    hbrBackground;  //类背景笔画的句柄</span><br><span class="line">  LPCSTR    lpszMenuName;  //类菜单资源的名称，如果此成员为NULL则属于此类的窗口没有默认菜单</span><br><span class="line">  LPCSTR    lpszClassName;  //如果lpszClassName是字符串，则指定窗口的类名，最大长度为256</span><br><span class="line">&#125; WNDCLASSA, *PWNDCLASSA, *NPWNDCLASSA, *LPWNDCLASSA;</span><br></pre></td></tr></table></figure>
+
+<p>窗口模板</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;windows.h&gt;</span><br><span class="line">#include &lt;tchar.h&gt;</span><br><span class="line"></span><br><span class="line">LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) &#123;</span><br><span class="line">    switch (msg) &#123;</span><br><span class="line">    case WM_DESTROY:</span><br><span class="line">        PostQuitMessage(0);</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br><span class="line">    return DefWindowProc(hwnd, msg, wParam, lParam);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, </span><br><span class="line">int iCmdShow) &#123;</span><br><span class="line">    static TCHAR szAppName[] = TEXT(&quot;HelloWorld&quot;);</span><br><span class="line">    HWND hwnd;</span><br><span class="line">    MSG msg;</span><br><span class="line">    WNDCLASS wndclass;</span><br><span class="line"></span><br><span class="line">    wndclass.style = CS_HREDRAW | CS_VREDRAW;</span><br><span class="line">    wndclass.lpfnWndProc = WndProc;</span><br><span class="line">    wndclass.cbClsExtra = 0;</span><br><span class="line">    wndclass.cbWndExtra = 0;</span><br><span class="line">    wndclass.hInstance = hInstance;</span><br><span class="line">    wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);</span><br><span class="line">    wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);</span><br><span class="line">    wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);</span><br><span class="line">    wndclass.lpszMenuName = NULL;</span><br><span class="line">    wndclass.lpszClassName = szAppName;</span><br><span class="line"></span><br><span class="line">    if (!RegisterClass(&amp;wndclass))</span><br><span class="line">    &#123;</span><br><span class="line">        MessageBox(NULL, TEXT(&quot;This program requires Windows NT!&quot;), szAppName, </span><br><span class="line">MB_ICONERROR);</span><br><span class="line">        return 0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    hwnd = CreateWindow(szAppName,</span><br><span class="line">        TEXT(&quot;The First Windows Program&quot;),</span><br><span class="line">        WS_OVERLAPPEDWINDOW,</span><br><span class="line">        CW_USEDEFAULT,</span><br><span class="line">        CW_USEDEFAULT,</span><br><span class="line">        CW_USEDEFAULT,</span><br><span class="line">        CW_USEDEFAULT,</span><br><span class="line">        NULL,</span><br><span class="line">        NULL,</span><br><span class="line">        hInstance,</span><br><span class="line">        NULL);</span><br><span class="line"></span><br><span class="line">    ShowWindow(hwnd, iCmdShow);</span><br><span class="line">    UpdateWindow(hwnd);</span><br><span class="line">    while (GetMessage(&amp;msg, NULL, 0, 0))</span><br><span class="line">    &#123;</span><br><span class="line">        TranslateMessage(&amp;msg);</span><br><span class="line">        DispatchMessage(&amp;msg);</span><br><span class="line">    &#125;</span><br><span class="line">    return (int)msg.wParam;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>自动下载文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">URLDownloadToFile</span><br><span class="line">这个函数已经被视为敏感函数</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+	
+    <div class="copyright-box">
+		<div class="license-box">
+			<div class="license-header">
+				
+				<div class="license-title">
+					Win32API
+				</div>
+				<div class="license-subTitle">https://0x0de8.github.io/project/2025/04/11/Win32API/index.html</div>
+			</div>
+			<div class="license-meta">
+				
+					<div class="license-meta-item">
+						<div>作者</div>
+						<div>
+							<a href="">
+								0x0DE8
+							</a>
+						</div>
+					</div>
+				
+				
+					<div class="license-meta-item license-meta-date">
+					<div>发布于</div>
+					<div>2025年4月11日</div>
+					</div>
+				
+				
+				
+				
+					<div class="license-meta-item">
+					<div>许可协议</div>
+					<div>
+						
+						
+						
+							<a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+								<span class="hint--top hint--rounded" aria-label="BY - 署名">
+									BY - 署名
+								</span>
+							</a>
+						
+						
+					</div>
+					</div>
+				
+			</div>
+		</div>
+	</div>
+
+</div>
+
+
+    
+
+    
+
+    
+        
+        <script async reload>
+            fetch("https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/tokyo-night-dark.css")
+                .then((response) => response.text())
+                .then((cssContent) => {
+                    const style = document.createElement("style");
+                    
+                        cssContent = cssContent
+                            .replace(".hljs-code,", "")
+                            .replaceAll("_", " ")
+                            .replaceAll("hljs-", "hljs .")
+                            .replaceAll(".hljs", " .highlight")
+                            .replaceAll(".built in", ".built_in")
+                            .replaceAll("title.", "");
+                        const figures = document.querySelectorAll("figure.highlight td.gutter");
+                        figures.forEach(figure=>{
+                            figure.classList.add("highlight");
+                        })
+                    
+                    style.innerHTML = cssContent;
+                    document.head.appendChild(style);
+                })
+                .catch((error) => {
+                    console.error("Error loading CSS:", error);
+                });
+        </script>
+    
+
+
+
+
+
+    <script reload>
+        var targets = document.querySelectorAll("figure.highlight, #article-content > pre:not(.highlight,.hljs)");
+        targets.forEach((block) => {
+            const copyBtn = document.createElement("button");
+            copyBtn.innerHTML = `<i class="fa fa-clone" aria-hidden="true"></i>`;
+            copyBtn.className = "code-copy";
+
+            
+                copyBtn.style.color = "#fff";
+            
+
+            copyBtn.addEventListener("click", () => {
+                const text = block.querySelector("td.code")?.textContent || block.querySelector("code")?.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    copyBtn.innerHTML = "Copied!";
+                    setTimeout(() => {
+                        copyBtn.innerHTML = `<i class="fa fa-clone" aria-hidden="true"></i>`;
+                    }, 2000);
+                });
+            });
+            block.appendChild(copyBtn);
+        });
+    </script>
+
+
+
+
+<div class="post-guide">
+	<div class="item left">
+	
+		<a href="/project/2025/04/10/hello-world/">
+			<i class="fa fa-angle-left" aria-hidden="true"></i>
+			Hello World
+		</a>
+	
+	</div>
+	<div class="item right">
+		
+	</div>
+</div>
+
+
+
+
+	</div>
+
+	<div id="footer">
+	<div>
+		
+		
+			<span id="busuanzi_container_site_pv">
+				总访问量
+				<span id="vercount_value_page_pv"></span>
+			</span>
+			<span id="busuanzi_container_site_uv">
+				总访客数
+				<span id="vercount_value_site_pv"></span>
+			</span>
+		
+	</div>
+	 <div> Theme <a href="https://github.com/Exisi/hexo-theme-node-tree"	target="_blank">Node-Tree</a> Powered by <a href="https://hexo.io" target="_blank">Hexo</a> </div> 
+</div>
+	<button id="totop-toggle" class="toggle"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+
+<script async>
+    const topTopBtn = document.querySelector("#totop-toggle");
+	topTopBtn.addEventListener("click", () => {
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	});
+</script>
+</body>
+</html>
